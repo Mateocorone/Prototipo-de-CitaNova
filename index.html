@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>CitaNova.com — Agenda simple para Latinoamérica</title>
+  <meta name="description" content="Prototipo responsive de CitaNova.com, agenda Lite con recordatorios por correo.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f6bff'/%3E%3Cpath d='M19 25h26v21H19z' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M19 31h26M25 18v10M39 18v10' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='38' r='4' fill='%235eead4'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #07101e;
+      --panel: #0d1727;
+      --panel-2: #111e31;
+      --panel-3: #17253a;
+      --line: rgba(159, 178, 209, .16);
+      --line-strong: rgba(159, 178, 209, .26);
+      --text: #f6f8fc;
+      --muted: #8fa1ba;
+      --primary: #5972ff;
+      --primary-soft: rgba(89, 114, 255, .16);
+      --mint: #5eead4;
+      --amber: #fbbf24;
+      --danger: #fb7185;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .28);
+      --radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { height: 100%; }
+    body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-size: 16px; }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(94, 234, 212, .38); outline-offset: 2px; }
+    .icon { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+
+    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+    .sidebar { background: linear-gradient(180deg, #0b1423, #08111f); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 20; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 28px; font-size: 1.13rem; font-weight: 760; letter-spacing: -.03em; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(145deg, #6a7cff, #425af3); box-shadow: 0 9px 30px rgba(89, 114, 255, .3); }
+    .brand-mark .icon { color: white; }
+    .brand small { display: block; color: var(--muted); font-size: .7rem; font-weight: 550; letter-spacing: .03em; margin-top: 1px; }
+    .nav-label { margin: 0 12px 8px; color: #657793; font-weight: 700; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
+    .nav { display: grid; gap: 6px; }
+    .nav-item { border: 0; background: transparent; color: #97a8bf; min-height: 44px; padding: 0 12px; border-radius: 11px; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; font-size: .92rem; transition: .2s ease; }
+    .nav-item:hover { color: var(--text); background: rgba(255,255,255,.04); }
+    .nav-item.active { color: white; background: var(--primary-soft); box-shadow: inset 3px 0 0 var(--primary); }
+    .sidebar-spacer { flex: 1; }
+    .plan-card { border: 1px solid rgba(94, 234, 212, .18); background: linear-gradient(145deg, rgba(94,234,212,.08), rgba(89,114,255,.08)); padding: 14px; border-radius: 15px; }
+    .plan-card strong { display: flex; gap: 8px; align-items: center; font-size: .84rem; }
+    .plan-card p { color: var(--muted); font-size: .76rem; line-height: 1.45; margin: 7px 0 0; }
+    .user { margin-top: 14px; border-top: 1px solid var(--line); padding: 16px 8px 0; display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #23324b; font-size: .75rem; font-weight: 750; }
+    .user-info { min-width: 0; }
+    .user-info strong, .user-info span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-info strong { font-size: .8rem; }
+    .user-info span { color: var(--muted); font-size: .69rem; margin-top: 2px; }
+
+    main { min-width: 0; }
+    .topbar { height: 72px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 0 28px; border-bottom: 1px solid var(--line); background: rgba(7,16,30,.8); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 15; }
+    .topbar .mobile-logo { display: none; }
+    .icon-button { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; }
+    .icon-button:hover { border-color: var(--line-strong); background: var(--panel-2); }
+    .date-chip { min-height: 42px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .8rem; }
+
+    .content { padding: 28px; max-width: 1540px; margin: 0 auto; }
+    .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
+    .eyebrow { color: var(--mint); font-weight: 750; letter-spacing: .1em; text-transform: uppercase; font-size: .68rem; margin-bottom: 8px; }
+    h1 { margin: 0; font-size: clamp(1.6rem, 2.8vw, 2.25rem); letter-spacing: -.045em; line-height: 1.1; }
+    .page-head p { color: var(--muted); margin: 9px 0 0; font-size: .92rem; }
+    .primary-button { border: 0; border-radius: 12px; background: linear-gradient(135deg, #647cff, #4c63f4); min-height: 46px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 700; cursor: pointer; box-shadow: 0 11px 30px rgba(89, 114, 255, .25); white-space: nowrap; }
+    .primary-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .stat { border: 1px solid var(--line); background: linear-gradient(145deg, rgba(17,30,49,.92), rgba(10,20,35,.92)); border-radius: 15px; padding: 15px 16px; display: flex; align-items: center; gap: 13px; }
+    .stat-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--primary-soft); color: #8394ff; }
+    .stat:nth-child(2) .stat-icon { background: rgba(94,234,212,.1); color: var(--mint); }
+    .stat:nth-child(3) .stat-icon { background: rgba(251,191,36,.1); color: var(--amber); }
+    .stat strong { display: block; font-size: 1.22rem; letter-spacing: -.03em; }
+    .stat span { color: var(--muted); font-size: .75rem; }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+    .calendar-card, .agenda-card { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(12, 23, 40, .92); box-shadow: var(--shadow); overflow: hidden; }
+    .calendar-toolbar { min-height: 70px; padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .month-nav { display: flex; align-items: center; gap: 8px; }
+    .month-nav h2 { margin: 0 8px; min-width: 165px; text-align: center; font-size: 1rem; text-transform: capitalize; }
+    .toolbar-button { min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: transparent; cursor: pointer; color: var(--muted); }
+    .toolbar-button:hover { color: white; background: var(--panel-3); }
+    .toolbar-button.square { width: 36px; padding: 0; display: inline-grid; place-items: center; }
+    .view-tabs { display: flex; background: #091321; padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
+    .view-tab { min-height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: .75rem; cursor: pointer; }
+    .view-tab.active { color: white; background: var(--panel-3); }
+
+    .calendar-scroll { overflow-x: auto; }
+    .calendar { min-width: 680px; }
+    .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .weekdays { border-bottom: 1px solid var(--line); background: rgba(255,255,255,.015); }
+    .weekday { padding: 12px 9px; color: #70829d; text-transform: uppercase; font-size: .66rem; font-weight: 780; letter-spacing: .08em; text-align: center; }
+    .day { min-height: 112px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 9px; cursor: pointer; transition: background .18s ease; }
+    .day:nth-child(7n) { border-right: 0; }
+    .day:nth-last-child(-n+7) { border-bottom: 0; }
+    .day:hover { background: rgba(255,255,255,.025); }
+    .day.other { color: #475974; }
+    .day.today { background: rgba(89,114,255,.035); }
+    .day-number { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; font-size: .76rem; margin-bottom: 7px; }
+    .today .day-number { background: var(--primary); color: white; font-weight: 780; box-shadow: 0 5px 16px rgba(89,114,255,.35); }
+    .event { padding: 6px 7px; border-left: 2px solid var(--primary); border-radius: 5px; background: rgba(89,114,255,.11); margin: 4px 0; overflow: hidden; }
+    .event.mint { border-left-color: var(--mint); background: rgba(94,234,212,.09); }
+    .event.amber { border-left-color: var(--amber); background: rgba(251,191,36,.09); }
+    .event strong, .event span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .event strong { font-size: .67rem; line-height: 1.25; }
+    .event span { color: var(--muted); font-size: .61rem; margin-top: 2px; }
+
+    .agenda-card { padding: 18px; box-shadow: none; }
+    .agenda-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; }
+    .agenda-head h2 { margin: 0; font-size: 1rem; }
+    .agenda-head span { color: var(--muted); font-size: .72rem; }
+    .agenda-date { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 750; margin-bottom: 11px; }
+    .appointment { border: 1px solid var(--line); border-radius: 13px; padding: 13px; margin-bottom: 10px; background: rgba(255,255,255,.018); }
+    .appointment-top { display: flex; justify-content: space-between; gap: 10px; }
+    .appointment strong { font-size: .82rem; }
+    .status { font-size: .62rem; font-weight: 750; color: var(--mint); background: rgba(94,234,212,.09); padding: 4px 7px; border-radius: 999px; }
+    .appointment p { color: var(--muted); margin: 7px 0 10px; font-size: .73rem; }
+    .mail-note { border-top: 1px solid var(--line); padding-top: 9px; display: flex; align-items: center; gap: 7px; color: #91a4bf; font-size: .67rem; }
+    .mail-note .icon { width: 15px; height: 15px; color: var(--primary); }
+    .empty-hour { border: 1px dashed var(--line-strong); color: #647692; border-radius: 13px; text-align: center; padding: 14px; font-size: .72rem; }
+
+    .bottom-nav { display: none; }
+    .mobile-fab { display: none; }
+
+    dialog { width: min(520px, calc(100% - 28px)); border: 1px solid var(--line-strong); border-radius: 20px; background: #0d1829; color: var(--text); padding: 0; box-shadow: 0 30px 100px rgba(0,0,0,.55); }
+    dialog::backdrop { background: rgba(2,8,18,.72); backdrop-filter: blur(5px); }
+    .modal-head { padding: 20px 22px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; font-size: 1.08rem; }
+    .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: .75rem; }
+    .modal-body { padding: 20px 22px; display: grid; gap: 15px; }
+    .field { display: grid; gap: 7px; }
+    .field label { color: #a9b7ca; font-size: .75rem; font-weight: 650; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line-strong); background: #091321; color: white; min-height: 43px; border-radius: 10px; padding: 10px 12px; }
+    .field textarea { resize: vertical; min-height: 76px; }
+    .email-option { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 11px; background: rgba(89,114,255,.08); border: 1px solid rgba(89,114,255,.16); }
+    .email-option input { margin-top: 3px; accent-color: var(--primary); }
+    .email-option strong, .email-option span { display: block; }
+    .email-option strong { font-size: .78rem; }
+    .email-option span { color: var(--muted); font-size: .68rem; margin-top: 3px; line-height: 1.4; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 9px; padding: 16px 22px 20px; }
+    .secondary-button { min-height: 42px; padding: 0 15px; border-radius: 11px; border: 1px solid var(--line-strong); background: transparent; color: var(--muted); cursor: pointer; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 80; background: #12233a; border: 1px solid rgba(94,234,212,.23); border-radius: 14px; padding: 13px 16px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); transform: translateY(24px); opacity: 0; pointer-events: none; transition: .25s ease; font-size: .82rem; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast .icon { color: var(--mint); }
+
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 84px minmax(0,1fr); }
+      .sidebar { align-items: center; padding-left: 12px; padding-right: 12px; }
+      .brand { padding-left: 0; padding-right: 0; }
+      .brand > span:not(.brand-mark), .nav-label, .nav-item span, .plan-card, .user-info { display: none; }
+      .nav-item { width: 48px; justify-content: center; padding: 0; }
+      .nav-item.active { box-shadow: none; }
+      .workspace { grid-template-columns: minmax(0,1fr) 286px; }
+    }
+
+    @media (max-width: 860px) {
+      .workspace { grid-template-columns: 1fr; }
+      .agenda-card { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .agenda-head, .agenda-date { grid-column: 1 / -1; }
+      .appointment { margin: 0; }
+      .stats { grid-template-columns: repeat(3, minmax(130px,1fr)); overflow-x: auto; padding-bottom: 2px; }
+    }
+
+    @media (max-width: 680px) {
+      body { padding-bottom: 72px; }
+      .app { display: block; }
+      .sidebar { display: none; }
+      .topbar { height: 62px; padding: 0 16px; justify-content: space-between; }
+      .topbar .mobile-logo { display: flex; align-items: center; gap: 9px; font-weight: 760; font-size: .95rem; }
+      .mobile-logo .brand-mark { width: 32px; height: 32px; border-radius: 9px; }
+      .date-chip { display: none; }
+      .content { padding: 20px 14px 10px; }
+      .page-head { margin-bottom: 18px; }
+      .page-head p { font-size: .82rem; }
+      .page-head > .primary-button { display: none; }
+      .stats { gap: 10px; margin-bottom: 14px; }
+      .stat { min-width: 146px; padding: 12px; }
+      .calendar-toolbar { padding: 12px; min-height: 62px; }
+      .month-nav h2 { min-width: 128px; font-size: .9rem; }
+      .toolbar-button:not(.square) { display: none; }
+      .view-tabs { display: none; }
+      .calendar { min-width: 100%; }
+      .weekday { padding: 10px 2px; font-size: .58rem; }
+      .day { min-height: 73px; padding: 5px 3px; }
+      .day-number { width: 24px; height: 24px; font-size: .68rem; margin: 0 auto 3px; }
+      .event { padding: 4px; border-left-width: 2px; margin: 3px 0; text-align: center; }
+      .event strong { font-size: 0; }
+      .event strong::after { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+      .event span { display: none; }
+      .agenda-card { grid-template-columns: 1fr; padding: 15px; }
+      .agenda-head, .agenda-date { grid-column: auto; }
+      .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; height: 68px; display: grid; grid-template-columns: repeat(4,1fr); background: rgba(8,17,31,.96); border-top: 1px solid var(--line); backdrop-filter: blur(18px); }
+      .bottom-nav button { border: 0; background: transparent; color: #778ba6; display: grid; place-content: center; justify-items: center; gap: 3px; font-size: .59rem; }
+      .bottom-nav button.active { color: #788bff; }
+      .bottom-nav .icon { width: 19px; height: 19px; }
+      .mobile-fab { display: grid; place-items: center; position: fixed; right: 18px; bottom: 84px; z-index: 45; width: 54px; height: 54px; border-radius: 17px; border: 0; background: var(--primary); box-shadow: 0 14px 35px rgba(89,114,255,.4); cursor: pointer; }
+      .field-row { grid-template-columns: 1fr; }
+      .toast { left: 14px; right: 14px; bottom: 84px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Navegación principal">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3.5 9h17M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z"/><path d="m9 14 2 2 4-5"/></svg></span>
+        <span>CitaNova<small>citanova.com · Lite</small></span>
+      </div>
+      <p class="nav-label">Espacio de trabajo</p>
+      <nav class="nav">
+        <button class="nav-item" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M4 13h6V4H4ZM14 20h6v-9h-6ZM4 20h6v-3H4ZM14 7h6V4h-6Z"/></svg><span>Resumen</span></button>
+        <button class="nav-item active" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2Z"/></svg><span>Calendario</span></button>
+        <button class="nav-item" type="button"><svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8M18 15a6 6 0 0 1 4 6"/></svg><span>Clientes</span></button>
+        <button class="nav-item" type="button"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Correos</span></button>
+        <button class="nav-item" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15 1.7 1.7 0 0 0 3.08 14H3v-4h.08A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.08V3h4v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.25.62.85 1.02 1.52 1.02H21v4h-.08c-.67 0-1.27.4-1.52 1.02Z"/></svg><span>Ajustes</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="plan-card"><strong><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h9"/></svg> Plan Lite</strong><p>Agenda, clientes y recordatorios por correo. Simple y sin extras.</p></div>
+      <div class="user"><div class="avatar">MC</div><div class="user-info"><strong>Mi negocio</strong><span>administrador</span></div></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="mobile-logo"><span class="brand-mark"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3.5 9h17M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z"/><path d="m9 14 2 2 4-5"/></svg></span>CitaNova</div>
+        <div class="date-chip"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2Z"/></svg><span id="topDate">Hoy</span></div>
+        <button class="icon-button" type="button" aria-label="Notificaciones"><svg class="icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+      </header>
+
+      <div class="content">
+        <section class="page-head">
+          <div><div class="eyebrow">Agenda Lite</div><h1>Tu calendario, sin complicaciones</h1><p>Organiza citas y confirma cada visita automáticamente por correo.</p></div>
+          <button class="primary-button new-appointment" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nueva cita</button>
+        </section>
+
+        <section class="stats" aria-label="Resumen de agenda">
+          <div class="stat"><div class="stat-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2Z"/></svg></div><div><strong>6</strong><span>Citas esta semana</span></div></div>
+          <div class="stat"><div class="stat-icon"><svg class="icon" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><div><strong>4</strong><span>Confirmadas</span></div></div>
+          <div class="stat"><div class="stat-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div><div><strong>5</strong><span>Correos enviados</span></div></div>
+        </section>
+
+        <section class="workspace">
+          <div class="calendar-card">
+            <div class="calendar-toolbar">
+              <div class="month-nav"><button class="toolbar-button square" id="prevMonth" aria-label="Mes anterior">‹</button><h2 id="monthTitle">Septiembre 2026</h2><button class="toolbar-button square" id="nextMonth" aria-label="Mes siguiente">›</button><button class="toolbar-button" id="todayButton">Hoy</button></div>
+              <div class="view-tabs" aria-label="Vista de calendario"><button class="view-tab active" type="button">Mes</button><button class="view-tab" type="button">Semana</button></div>
+            </div>
+            <div class="calendar-scroll">
+              <div class="calendar">
+                <div class="weekdays"><div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div><div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div><div class="weekday">Dom</div></div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="agenda-card" aria-label="Agenda del día">
+            <div class="agenda-head"><h2>Agenda de hoy</h2><span>2 citas</span></div>
+            <div class="agenda-date" id="agendaDate">Miércoles, 30 de septiembre</div>
+            <article class="appointment"><div class="appointment-top"><strong>Valentina Rojas</strong><span class="status">Confirmada</span></div><p>09:30 · Consulta inicial</p><div class="mail-note"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Recordatorio enviado por correo</div></article>
+            <article class="appointment"><div class="appointment-top"><strong>Diego Méndez</strong><span class="status">Confirmada</span></div><p>15:00 · Sesión de seguimiento</p><div class="mail-note"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Confirmación enviada por correo</div></article>
+            <button class="empty-hour new-appointment" type="button">+ Agregar en horario libre</button>
+          </aside>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <button class="mobile-fab new-appointment" type="button" aria-label="Nueva cita"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <nav class="bottom-nav" aria-label="Navegación móvil">
+    <button type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M4 13h6V4H4ZM14 20h6v-9h-6ZM4 20h6v-3H4ZM14 7h6V4h-6Z"/></svg>Resumen</button>
+    <button class="active" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M6 2v4M18 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v15H3V6a2 2 0 0 1 2-2Z"/></svg>Agenda</button>
+    <button type="button"><svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8M18 15a6 6 0 0 1 4 6"/></svg>Clientes</button>
+    <button type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15 1.7 1.7 0 0 0 3.08 14H3v-4h.08A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.08V3h4v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.25.62.85 1.02 1.52 1.02H21v4h-.08c-.67 0-1.27.4-1.52 1.02Z"/></svg>Ajustes</button>
+  </nav>
+
+  <dialog id="appointmentDialog">
+    <form method="dialog" id="appointmentForm">
+      <div class="modal-head"><div><h2>Nueva cita</h2><p>La confirmación se enviará por correo.</p></div><button class="icon-button close-dialog" type="button" aria-label="Cerrar"><svg class="icon" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body">
+        <div class="field"><label for="client">Nombre del cliente</label><input id="client" name="client" placeholder="Ej. Camila Torres" required></div>
+        <div class="field"><label for="email">Correo electrónico</label><input id="email" name="email" type="email" placeholder="cliente@correo.com" required></div>
+        <div class="field-row"><div class="field"><label for="date">Fecha</label><input id="date" name="date" type="date" required></div><div class="field"><label for="time">Hora</label><input id="time" name="time" type="time" value="10:00" required></div></div>
+        <div class="field"><label for="service">Motivo de la cita</label><input id="service" name="service" placeholder="Ej. Consulta inicial"></div>
+        <label class="email-option"><input type="checkbox" checked><span><strong>Enviar confirmación automática</strong><span>El cliente recibirá los detalles de la cita en su correo.</span></span></label>
+      </div>
+      <div class="modal-actions"><button class="secondary-button close-dialog" type="button">Cancelar</button><button class="primary-button" id="saveAppointment" value="default">Guardar cita</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"><svg class="icon" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg><span>Cita guardada. Correo de confirmación preparado.</span></div>
+
+  <script>
+    const grid = document.getElementById('calendarGrid');
+    const title = document.getElementById('monthTitle');
+    const dialog = document.getElementById('appointmentDialog');
+    const form = document.getElementById('appointmentForm');
+    const toast = document.getElementById('toast');
+    const today = new Date(2026, 8, 30);
+    let visibleDate = new Date(2026, 8, 1);
+
+    const sampleEvents = {
+      '2026-09-02': [['10:00', 'Camila Torres', 'mint']],
+      '2026-09-08': [['14:30', 'Laura Gómez', '']],
+      '2026-09-11': [['09:00', 'Andrés Silva', 'amber']],
+      '2026-09-17': [['11:30', 'María López', 'mint'], ['16:00', 'Carlos P.', '']],
+      '2026-09-24': [['10:00', 'Sofía Herrera', '']],
+      '2026-09-30': [['09:30', 'Valentina R.', 'mint'], ['15:00', 'Diego Méndez', '']],
+      '2026-10-03': [['11:00', 'Ana Ferreira', 'amber']],
+      '2026-10-07': [['09:00', 'Julián Castro', 'mint']]
+    };
+
+    function keyFor(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function renderCalendar() {
+      grid.innerHTML = '';
+      const year = visibleDate.getFullYear();
+      const month = visibleDate.getMonth();
+      title.textContent = visibleDate.toLocaleDateString('es-EC', { month: 'long', year: 'numeric' });
+      const first = new Date(year, month, 1);
+      const mondayOffset = (first.getDay() + 6) % 7;
+      const start = new Date(year, month, 1 - mondayOffset);
+
+      for (let i = 0; i < 42; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const key = keyFor(date);
+        const day = document.createElement('div');
+        day.className = 'day' + (date.getMonth() !== month ? ' other' : '') + (key === keyFor(today) ? ' today' : '');
+        day.innerHTML = `<div class="day-number">${date.getDate()}</div>`;
+        (sampleEvents[key] || []).slice(0, 2).forEach(([time, name, color]) => {
+          day.insertAdjacentHTML('beforeend', `<div class="event ${color}"><strong>${name}</strong><span>${time}</span></div>`);
+        });
+        day.addEventListener('click', () => {
+          document.getElementById('date').value = key;
+          dialog.showModal();
+        });
+        grid.appendChild(day);
+      }
+    }
+
+    document.querySelectorAll('.new-appointment').forEach(button => button.addEventListener('click', () => {
+      document.getElementById('date').value = keyFor(today);
+      dialog.showModal();
+    }));
+    document.querySelectorAll('.close-dialog').forEach(button => button.addEventListener('click', () => dialog.close()));
+    document.getElementById('prevMonth').addEventListener('click', () => { visibleDate.setMonth(visibleDate.getMonth() - 1); renderCalendar(); });
+    document.getElementById('nextMonth').addEventListener('click', () => { visibleDate.setMonth(visibleDate.getMonth() + 1); renderCalendar(); });
+    document.getElementById('todayButton').addEventListener('click', () => { visibleDate = new Date(today.getFullYear(), today.getMonth(), 1); renderCalendar(); });
+    document.querySelectorAll('.view-tab').forEach(tab => tab.addEventListener('click', () => {
+      document.querySelectorAll('.view-tab').forEach(item => item.classList.remove('active'));
+      tab.classList.add('active');
+    }));
+    form.addEventListener('submit', event => {
+      const submitter = event.submitter;
+      if (submitter && submitter.value === 'cancel') return;
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      dialog.close();
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3300);
+      form.reset();
+    });
+
+    const longDate = today.toLocaleDateString('es-EC', { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('topDate').textContent = longDate.charAt(0).toUpperCase() + longDate.slice(1);
+    renderCalendar();
+  </script>
+</body>
+</html>
